@@ -10,7 +10,18 @@ from contextlib import contextmanager
 import torch
 
 import transformer_engine as te
-from transformer_engine.pytorch.attention import RotaryPositionEmbedding
+
+# Import RotaryPositionEmbedding with version compatibility for TE 2.2
+try:
+    # Try the current import path (TE 1.0+)
+    from transformer_engine.pytorch.attention import RotaryPositionEmbedding
+except ImportError:
+    # Try the older import path for TE 2.2 and earlier
+    try:
+        from transformer_engine.pytorch.module import RotaryPositionEmbedding
+    except ImportError:
+        # Fallback for very old versions
+        from transformer_engine.pytorch import RotaryPositionEmbedding
 
 import transformers
 from transformers.models.llama.modeling_llama import (
