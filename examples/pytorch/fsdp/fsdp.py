@@ -308,7 +308,7 @@ def train(opts):
 
 
 # Run with:
-#   torchrun --nnodes=1 --nproc-per-node=$(nvidia-smi -L | wc -l) test_fsdp.py --defer-init
+#   torchrun --nnodes=1 --nproc-per-node=$(nvidia-smi -L | wc -l) test_fsdp.py --no-defer-init
 if __name__ == "__main__":
     args = parse_fsdp_args()
     train(args)
