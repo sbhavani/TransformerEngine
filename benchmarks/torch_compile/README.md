@@ -63,31 +63,19 @@ python3 test_end_to_end_surgical.py
 | RoPE Isolated | RoPE only | ~2.79x baseline | 1x baseline | 2.79x | Significant isolated speedup |
 | End-to-End | Full Model | 31.284 ms | 28.261 ms | 1.11x | 10.7% improvement |
 
-**End-to-End Model Configuration**:
+**e2e Model Configuration**:
 - Batch size: 8, Sequence length: 2048, Hidden size: 2048
 - 4 transformer layers, 16 attention heads
 - Average over 50 trials with 10 warmup iterations
 - **Baseline (All Eager)**: 31.284 ms avg, 31.038 ms min
 - **Surgical (Compiled Tensor Ops)**: 28.261 ms avg, 27.910 ms min
 
-## Hardware Requirements
-
-- NVIDIA GPU with CUDA support
-- TransformerEngine compatible GPU (tested on H100)
-- PyTorch with CUDA support
-- TransformerEngine library properly installed
-
 ## Implementation Strategy
 
-### What Gets Compiled (Surgical Targets)
+### What Gets Compiled
 - **RoPE Operations**: Complex trigonometric computations benefit significantly
 - **Tensor Reshaping**: QKV projection reshaping and attention output combination
 - **Standard PyTorch Operations**: Attention computations, activations
-
-### What Stays Eager (Preserved Operations)
-- **TransformerEngine FP8 Linear Layers**: Maintain specialized optimizations
-- **FP8 Autocast Contexts**: Preserve precision management
-- **Custom CUDA Kernels**: Keep existing kernel optimizations
 
 ### Code Pattern
 ```python
@@ -116,22 +104,10 @@ class MiniTransformerLayer(nn.Module):
 - **Root Cause**: Compilation optimizations may change operation order
 - **Recommendation**: Further investigation needed for production use
 
-### Memory Usage
-- **FP8 Linear Layers**: Preserved memory efficiency
-- **Compiled Operations**: Standard torch.compile memory overhead
-- **Overall**: Minimal additional memory impact
-
 ### Compilation Overhead
 - **First Run**: Initial compilation cost (one-time)
 - **Subsequent Runs**: Full performance benefits
 - **Training**: Compilation cost amortized over many iterations
-
-## Usage Recommendations
-
-### For Development
-1. Start with isolated tests (`test_rope_speedup.py`)
-2. Validate integration (`test_te_surgical.py`)
-3. Measure end-to-end impact (`test_end_to_end_surgical.py`)
 
 ## Future Work
 
