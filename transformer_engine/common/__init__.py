@@ -170,11 +170,13 @@ def load_framework_extension(framework: str) -> None:
 
     assert te_installed, "Could not find `transformer_engine`."
 
-    # If the framework extension pip package is installed, it means that TE is installed via
-    # PyPI. For this case we need to make sure that the metapackage, the core lib, and framework
-    # extension are all installed via PyPI and have matching versions.
-    if te_framework_installed:
-        assert te_installed_via_pypi, "Could not find `transformer-engine` PyPI package."
+    # If the framework extension pip package is installed AND this is a PyPI install
+    # (not a source build), we need to make sure that the metapackage, the core lib,
+    # and framework extension are all installed via PyPI and have matching versions.
+    # For source builds (te_installed_via_pypi=False), skip these checks since the
+    # framework extension is bundled in the main package, not a separate pip package.
+    # Any leftover framework extension packages from previous PyPI installs are ignored.
+    if te_framework_installed and te_installed_via_pypi:
         assert te_core_installed, "Could not find TE core package `transformer-engine-cu*`."
 
         assert version(module_name) == version("transformer-engine") == te_core_version, (
@@ -201,9 +203,11 @@ def sanity_checks_for_pypi_installation() -> None:
 
     assert te_installed, "Could not find `transformer-engine`."
 
-    # If the core package is installed via PyPI.
-    if te_core_installed:
-        assert te_installed_via_pypi, "Could not find `transformer-engine` PyPI package."
+    # If the core package is installed via PyPI AND this is a PyPI install (not a source build),
+    # validate that the versions match. For source builds (te_installed_via_pypi=False),
+    # skip these checks since the core lib is bundled in the main package.
+    # Any leftover core packages from previous PyPI installs are ignored.
+    if te_core_installed and te_installed_via_pypi:
         assert version("transformer-engine") == te_core_version, (
             "Transformer Engine package version mismatch. Found "
             f"transformer-engine v{version('transformer-engine')} "
